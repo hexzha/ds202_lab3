@@ -21,22 +21,34 @@ The General Social Survey (GSS) has been run by NORC every other year since 1972
 
 Now it's important to understand what each column stands for. You can find a codebook with explanations for each of the variables at https://gssdataexplorer.norc.org/
 
-```{r,eval=FALSE}
-happy <- readRDS("HAPPY.rds")
-names(happy) = tolower(names(happy))
-```
 
+```{r}
+library(classdata)
+library(dplyr)
+
+names(happy) = tolower(names(happy))
+
+```
 
 ## Data Cleaning 
 
 Initial exploration revealed that some data processing was needed before we could proceed with further visualization. All missing values were encoded with 'NA' as follows:
 ```{r}
-library(dplyr)
 
-happy %>%
-  mutate_each(funs(replace(., .=="IAP", NA)))
-happy %>%
-  mutate_each(funs(replace(., .=="DK", NA)))
+happy2 <- happy
+
+na_codes <- c("IAP", "DK", "")
+for (i in seq_along(happy2)) {
+  happy2[[i]][happy2[[i]] %in% na_codes] <- NA
+}
+
+for (i in 1:nrow(happy2)) {
+  val <- happy2[i, 'age']
+  if(val == "89 OR OLDER") {
+    happy2[i, 'age'] <- 89
+    print()
+  }
+}
 
 ```
 
