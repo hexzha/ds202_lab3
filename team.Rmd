@@ -21,6 +21,7 @@ The General Social Survey (GSS) has been run by NORC every other year since 1972
 
 Now it's important to understand what each column stands for. You can find a codebook with explanations for each of the variables at https://gssdataexplorer.norc.org/
 
+
 ```{r}
 library(classdata)
 library(dplyr)
@@ -33,6 +34,7 @@ names(happy) = tolower(names(happy))
 
 Initial exploration revealed that some data processing was needed before we could proceed with further visualization. All missing values were encoded with 'NA' as follows:
 ```{r}
+
 happy2 <- happy
 
 na_codes <- c("IAP", "DK", "")
@@ -47,7 +49,6 @@ for (i in 1:nrow(happy2)) {
     print()
   }
 }
-
 
 ```
 
