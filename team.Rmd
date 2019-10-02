@@ -26,14 +26,24 @@ Now it's important to understand what each column stands for. You can find a cod
 library(classdata)
 library(dplyr)
 
+happy <- readRDS("HAPPY.rds")
 names(happy) = tolower(names(happy))
 
 ```
 
 ## Data Cleaning 
 
-Initial exploration revealed that some data processing was needed before we could proceed with further visualization. All missing values were encoded with 'NA' as follows:
+Initial exploration revealed that some data processing was needed before we could proceed with further visualization. The table below shows the number of missing values for all variables before data cleaning. After this discovery, we changed all missing values labeled as "DK" and "IAP" as NA. The second table shows this was successful. 
 ```{r}
+na.table <- data.frame()
+for(i in 1:ncol(happy)){
+  na.table[1,i] <- sum(is.na(happy[i]))
+  na.table[2,i] <- length(grep("IAP", happy[,i]))
+  na.table[3,i] <- length(grep("DK", happy[,i]))
+}
+names(na.table) <- colnames(happy)
+rownames(na.table) <- c("NAs","IAP","DK")
+na.table
 
 happy2 <- happy
 
@@ -42,6 +52,22 @@ for (i in seq_along(happy2)) {
   happy2[[i]][happy2[[i]] %in% na_codes] <- NA
 }
 
+na.table2 <- data.frame()
+for(i in 1:ncol(happy2)){
+  na.table2[1,i] <- sum(is.na(happy2[i]))
+  na.table2[2,i] <- length(grep("IAP", happy2[,i]))
+  na.table2[3,i] <- length(grep("DK", happy2[,i]))
+}
+names(na.table2) <- colnames(happy2)
+rownames(na.table2) <- c("NAs","IAP","DK")
+na.table2
+```
+
+Variables were also cast into the correct type in order to ease data visualization. All variables appear to be the correct type of variable, including age. Additionally, there are no instances where age appears as "89 OR OLDER". 
+```{r}
+str(happy2)
+length(grep("89 OR OLDER", happy2$age))
+
 for (i in 1:nrow(happy2)) {
   val <- happy2[i, 'age']
   if(val == "89 OR OLDER") {
@@ -49,14 +75,6 @@ for (i in 1:nrow(happy2)) {
     print()
   }
 }
-
-```
-
-In total there were `....` number of missing values for the following `....` variables. 
-
-Variables were also cast into the correct type in order to ease data visualization. This was done by:
-```{r}
-#insert relevant R code for Q2 here
 ```
 
 Factors were also organized into meaningful order as follows: 
