@@ -7,6 +7,10 @@ date: "09/26/2019"
 output: html_document
 ---
 
+Owners Username: ashleyna7
+Partners Username: hexzha
+Owners Repo Name: ds202_lab3
+
 
 ## Background
 
@@ -106,14 +110,34 @@ str(happy2)
 
 ## Data Exploration 
 
-Two variables of interest are `...` and `...`. Their distributions are as follow: 
+Two variables of interest are age and happy. Their distributions are as follow: 
 ```{r}
-#insert relevant R code here
-#include graphics. DESCRIBE your plot in context. Make sure it includes axis labels and appropriate title. 
+library(ggplot2)
+ggplot(happy2, aes(age)) + geom_histogram(color="black", fill="lightblue", size=0.5) + xlab("Age") + ylab("Count") + ggtitle("Distribution of Age")
+
+ggplot(happy2, aes(happy)) + geom_bar(color="black", fill="maroon") + xlab("Happiness Level") + ylab("Count") + ggtitle("Distribution of Happiness")
 ```
 
-The distribution for `...` is `....`, suggesting that `....` 
+We can see from the first histogram, the variable of interest is age. The distribution for age is approximately right skewed as most of the data is to the left of the graph. It is also odd the graph has flucuations throughout the distribution. More exploration will be needed to determine the cause of this. The second graph shows the distribution of happy. It is clear most of the population is "pretty happy", while the smallest group is "not too happy". This is important information to know as we continue to explore our data. We will want to see what other variables possibly contribute to people to being "not happy".
 
+```{r}
+ggplot(happy2, aes(x=happy, fill=sex)) + geom_bar(position="identity", size=0.5) + facet_grid(sex~.) + theme(legend.position = "right") + xlab("Age") + ylab("Count") + ggtitle("Distribution of Age by Sex")
+```
+
+
+From the plot above, we can tell that the distribution of happiness is not really effected by sex as the distributions for happiness for male and female are about the same. This could be useful information in the future when we are trying to build a model for happiness. Since we know happines does not differ between sex, then sex will most likely not bea valuable feature. 
+
+The plot below is a boxplot of age grouped by happiness level. We can see from this plot that the median age for "pretty happy" is lower than for "not too happy" and "very happy". Additionally for "pretty happy", the third quartile is lower than the other categories as well. This is an indication that age may be a good indication of happiness and should be considered in future modeling. 
+
+```{r}
+ggplot(happy2, aes(x=happy, y=age, fill=happy)) + geom_boxplot(position="identity", size=0.5) + theme(legend.position = "left") + xlab("Age") + ylab("Count") + ggtitle("Distribution of Happiness by Age") + coord_flip()
+```
+
+```{r}
+ggplot(happy2, aes(x=happy, color=health)) + geom_bar(position="dodge", size=0.5) + theme(legend.position = "right") + xlab("Age") + ylab("Count") + ggtitle("Distribution of Age by Sex")
+```
+
+From the plot above, we can see that comparetively, people in good health tend to be happier. Comparing the ratio difference between those in good health to those in fair and poor health, we can see that the ratio difference from "not too happy" to "pretty happy" is much larger for good health than for others. This is an indication that someone's health may have an impact on their happiness and should be consider later. 
 
 
 
