@@ -7,6 +7,10 @@ date: "09/26/2019"
 output: html_document
 ---
 
+Owners Username: ashleyna7
+Partners Username: hexzha
+Owners Repo Name: ds202_lab3
+
 
 ## Background
 
@@ -33,7 +37,7 @@ names(happy) = tolower(names(happy))
 
 ## Data Cleaning 
 
-Initial exploration revealed that some data processing was needed before we could proceed with further visualization. The table below shows the number of missing values for all variables before data cleaning. After this discovery, we changed all missing values labeled as "DK" and "IAP" as NA. The second table shows this was successful. 
+Initial exploration revealed that some data processing was needed before we could proceed with further visualization. The first table below shows the number of missing values for all variables before data cleaning, labeled as "IAP", "DK", and "NA". After this discovery, we changed all missing values labeled as "DK" and "IAP" and relabeled them as "NA". The second table belows shows this was successful. 
 ```{r}
 na.table <- data.frame()
 for(i in 1:ncol(happy)){
@@ -63,9 +67,11 @@ rownames(na.table2) <- c("NAs","IAP","DK")
 na.table2
 ```
 
-Variables were also cast into the correct type in order to ease data visualization. Age appears to be a character variable, and should be numeric. All categorical variables need to be changed to type factor except partyid and polyviews. There are 335 instances where age appears as "89 OR OLDER". We changed this to show "89 OR OLDER" as 89 so the variable age can be changed to numeric.  
+
+As we can see below, a lot of variables were also cast into the wrong variable type. Age appears to be a character variable, and should be numeric. All categorical variables needed to be changed to type factor (except partyid and polyviews). There were 335 instances where age appeared as "89 OR OLDER". We changed this for all instances that were labeled as "89 OR OLDER" and labeled them as 89 so the variable age could be changed to type numeric. We can now see below that all variabels are now cast into the correct variable type. 
+
 ```{r}
-str(happy2)
+str(happy)
 length(grep("89 OR OLDER", happy2$age))
 
 for (i in 1:nrow(happy2)) {
@@ -84,38 +90,54 @@ happy2$marital <- as.factor(happy2$marital)
 happy2$degree <- as.factor(happy2$degree)
 happy2$finrela <- as.factor(happy2$finrela)
 happy2$health <- as.factor(happy2$health)
+
 str(happy2)
 ```
 
-Factors were also organized into meaningful order as follows: We ordered marital status by age, 
+Factors were also organized into meaningful order as follows: We ordered marital status by age and health by age.
 ```{r}
-happy2 %>% 
-  group_by(marital) %>% 
-  mutate(mean=mean(age)) %>%
-  arrange(age)
+marital.df <- as.data.frame(aggregate(happy2$age, by=list(happy2$marital), mean, na.rm=TRUE))
+marital.order <- c(order(marital.df[,"x"]))
+happy2$marital <- factor(happy2$marital,levels(happy2$marital)[marital.order])
 
-marital.order <- order(as.data.frame(aggregate(happy2$age, by=list(happy2$marital), mean, na.rm=TRUE))[,"x"])
+health.df <- as.data.frame(aggregate(happy2$age, by=list(happy2$health), mean, na.rm=TRUE))
+health.order <- c(order(health.df[,"x"]))
+happy2$health <- factor(happy2$health,levels(happy2$health)[health.order])
 
-levels(happy2$marital)
-sizes <- ordered(happy2$marital, levels = c("small", "medium", "large"))
+str(happy2)
 ```
 
 
 ## Data Exploration 
 
-Two variables of interest are age and `...`. Their distributions are as follow: 
+Two variables of interest are age and happy. Their distributions are as follow: 
 ```{r}
-
 library(ggplot2)
+ggplot(happy2, aes(age)) + geom_histogram(color="black", fill="lightblue", size=0.5) + xlab("Age") + ylab("Count") + ggtitle("Distribution of Age")
 
-ggplot(data=happy2, aes(x=happy2$age)) + 
-  geom_histogram(col="black", fill="white", bins=50, size = .5) + 
-  labs(title="Histogram for Age", x="Age", y="Count")
-
+ggplot(happy2, aes(happy)) + geom_bar(color="black", fill="maroon") + xlab("Happiness Level") + ylab("Count") + ggtitle("Distribution of Happiness")
 ```
 
-The distribution for age is left skewed, suggesting that most people surveyed were younger people. 
+We can see from the first histogram, the variable of interest is age. The distribution for age is approximately right skewed as most of the data is to the left of the graph. It is also odd the graph has flucuations throughout the distribution. More exploration will be needed to determine the cause of this. The second graph shows the distribution of happy. It is clear most of the population is "pretty happy", while the smallest group is "not too happy". This is important information to know as we continue to explore our data. We will want to see what other variables possibly contribute to people to being "not happy".
 
+```{r}
+ggplot(happy2, aes(x=happy, fill=sex)) + geom_bar(position="identity", size=0.5) + facet_grid(sex~.) + theme(legend.position = "right") + xlab("Age") + ylab("Count") + ggtitle("Distribution of Age by Sex")
+```
+
+
+From the plot above, we can tell that the distribution of happiness is not really effected by sex as the distributions for happiness for male and female are about the same. This could be useful information in the future when we are trying to build a model for happiness. Since we know happines does not differ between sex, then sex will most likely not bea valuable feature. 
+
+The plot below is a boxplot of age grouped by happiness level. We can see from this plot that the median age for "pretty happy" is lower than for "not too happy" and "very happy". Additionally for "pretty happy", the third quartile is lower than the other categories as well. This is an indication that age may be a good indication of happiness and should be considered in future modeling. 
+
+```{r}
+ggplot(happy2, aes(x=happy, y=age, fill=happy)) + geom_boxplot(position="identity", size=0.5) + theme(legend.position = "left") + xlab("Age") + ylab("Count") + ggtitle("Distribution of Happiness by Age") + coord_flip()
+```
+
+```{r}
+ggplot(happy2, aes(x=happy, color=health)) + geom_bar(position="dodge", size=0.5) + theme(legend.position = "right") + xlab("Age") + ylab("Count") + ggtitle("Distribution of Age by Sex")
+```
+
+From the plot above, we can see that comparetively, people in good health tend to be happier. Comparing the ratio difference between those in good health to those in fair and poor health, we can see that the ratio difference from "not too happy" to "pretty happy" is much larger for good health than for others. This is an indication that someone's health may have an impact on their happiness and should be consider later. 
 
 
 
