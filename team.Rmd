@@ -103,13 +103,18 @@ sizes <- ordered(happy2$marital, levels = c("small", "medium", "large"))
 
 ## Data Exploration 
 
-Two variables of interest are `...` and `...`. Their distributions are as follow: 
+Two variables of interest are age and `...`. Their distributions are as follow: 
 ```{r}
-#insert relevant R code here
-#include graphics. DESCRIBE your plot in context. Make sure it includes axis labels and appropriate title. 
+
+library(ggplot2)
+
+ggplot(data=happy2, aes(x=happy2$age)) + 
+  geom_histogram(col="black", fill="white", bins=50, size = .5) + 
+  labs(title="Histogram for Age", x="Age", y="Count")
+
 ```
 
-The distribution for `...` is `....`, suggesting that `....` 
+The distribution for age is left skewed, suggesting that most people surveyed were younger people. 
 
 
 
