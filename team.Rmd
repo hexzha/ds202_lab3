@@ -33,7 +33,7 @@ names(happy) = tolower(names(happy))
 
 ## Data Cleaning 
 
-Initial exploration revealed that some data processing was needed before we could proceed with further visualization. The table below shows the number of missing values for all variables before data cleaning. After this discovery, we changed all missing values labeled as "DK" and "IAP" as NA. The second table shows this was successful. 
+Initial exploration revealed that some data processing was needed before we could proceed with further visualization. The first table below shows the number of missing values for all variables before data cleaning, labeled as "IAP", "DK", and "NA". After this discovery, we changed all missing values labeled as "DK" and "IAP" and relabeled them as "NA". The second table belows shows this was successful. 
 ```{r}
 na.table <- data.frame()
 for(i in 1:ncol(happy)){
@@ -63,9 +63,11 @@ rownames(na.table2) <- c("NAs","IAP","DK")
 na.table2
 ```
 
-Variables were also cast into the correct type in order to ease data visualization. Age appears to be a character variable, and should be numeric. All categorical variables need to be changed to type factor except partyid and polyviews. There are 335 instances where age appears as "89 OR OLDER". We changed this to show "89 OR OLDER" as 89 so the variable age can be changed to numeric.  
+
+As we can see below, a lot of variables were also cast into the wrong variable type. Age appears to be a character variable, and should be numeric. All categorical variables needed to be changed to type factor (except partyid and polyviews). There were 335 instances where age appeared as "89 OR OLDER". We changed this for all instances that were labeled as "89 OR OLDER" and labeled them as 89 so the variable age could be changed to type numeric. We can now see below that all variabels are now cast into the correct variable type. 
+
 ```{r}
-str(happy2)
+str(happy)
 length(grep("89 OR OLDER", happy2$age))
 
 for (i in 1:nrow(happy2)) {
@@ -84,20 +86,21 @@ happy2$marital <- as.factor(happy2$marital)
 happy2$degree <- as.factor(happy2$degree)
 happy2$finrela <- as.factor(happy2$finrela)
 happy2$health <- as.factor(happy2$health)
+
 str(happy2)
 ```
 
-Factors were also organized into meaningful order as follows: We ordered marital status by age, 
+Factors were also organized into meaningful order as follows: We ordered marital status by age and health by age.
 ```{r}
-happy2 %>% 
-  group_by(marital) %>% 
-  mutate(mean=mean(age)) %>%
-  arrange(age)
+marital.df <- as.data.frame(aggregate(happy2$age, by=list(happy2$marital), mean, na.rm=TRUE))
+marital.order <- c(order(marital.df[,"x"]))
+happy2$marital <- factor(happy2$marital,levels(happy2$marital)[marital.order])
 
-marital.order <- order(as.data.frame(aggregate(happy2$age, by=list(happy2$marital), mean, na.rm=TRUE))[,"x"])
+health.df <- as.data.frame(aggregate(happy2$age, by=list(happy2$health), mean, na.rm=TRUE))
+health.order <- c(order(health.df[,"x"]))
+happy2$health <- factor(happy2$health,levels(happy2$health)[health.order])
 
-levels(happy2$marital)
-sizes <- ordered(happy2$marital, levels = c("small", "medium", "large"))
+str(happy2)
 ```
 
 

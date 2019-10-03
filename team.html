@@ -223,16 +223,132 @@ $(document).ready(function () {
 </tbody>
 </table>
 <p>Now it’s important to understand what each column stands for. You can find a codebook with explanations for each of the variables at <a href="https://gssdataexplorer.norc.org/" class="uri">https://gssdataexplorer.norc.org/</a></p>
+<pre class="r"><code>library(classdata)
+library(dplyr)</code></pre>
+<pre><code>## Warning: package 'dplyr' was built under R version 3.4.4</code></pre>
+<pre><code>## 
+## Attaching package: 'dplyr'</code></pre>
+<pre><code>## The following objects are masked from 'package:stats':
+## 
+##     filter, lag</code></pre>
+<pre><code>## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code>happy &lt;- readRDS(&quot;HAPPY.rds&quot;)
+names(happy) = tolower(names(happy))</code></pre>
 </div>
 <div id="data-cleaning" class="section level2">
 <h2>Data Cleaning</h2>
-<p>Initial exploration revealed that some data processing was needed before we could proceed with further visualization. All missing values were encoded with ‘NA’ as follows:</p>
-<pre class="r"><code>#insert relevant R code for Q1 here</code></pre>
-<p>In total there were <code>....</code> number of missing values for the following <code>....</code> variables.</p>
-<p>Variables were also cast into the correct type in order to ease data visualization. This was done by:</p>
-<pre class="r"><code>#insert relevant R code for Q2 here</code></pre>
-<p>Factors were also organized into meaningful order as follows:</p>
-<pre class="r"><code>#insert relevant R code for Q3 here</code></pre>
+<p>Initial exploration revealed that some data processing was needed before we could proceed with further visualization. The first table below shows the number of missing values for all variables before data cleaning, labeled as “IAP”, “DK”, and “NA”. After this discovery, we changed all missing values labeled as “DK” and “IAP” and relabeled them as “NA”. The second table belows shows this was successful.</p>
+<pre class="r"><code>na.table &lt;- data.frame()
+for(i in 1:ncol(happy)){
+  na.table[1,i] &lt;- sum(is.na(happy[i]))
+  na.table[2,i] &lt;- length(grep(&quot;IAP&quot;, happy[,i]))
+  na.table[3,i] &lt;- length(grep(&quot;DK&quot;, happy[,i]))
+}
+names(na.table) &lt;- colnames(happy)
+rownames(na.table) &lt;- c(&quot;NAs&quot;,&quot;IAP&quot;,&quot;DK&quot;)
+na.table</code></pre>
+<pre><code>##     happy year age sex marital degree finrela health wtssall partyid
+## NAs  4756    0 220   0      25    143     150     90       0     374
+## IAP     0    0   0   0       0      0    4383  16325       0       0
+## DK      0    0   1   0       0     30     468     30       0      11
+##     polviews
+## NAs      361
+## IAP     6777
+## DK      2247</code></pre>
+<pre class="r"><code>happy2 &lt;- happy
+
+na_codes &lt;- c(&quot;IAP&quot;, &quot;DK&quot;, &quot;&quot;)
+for (i in seq_along(happy2)) {
+  happy2[[i]][happy2[[i]] %in% na_codes] &lt;- NA
+}
+
+na.table2 &lt;- data.frame()
+for(i in 1:ncol(happy2)){
+  na.table2[1,i] &lt;- sum(is.na(happy2[i]))
+  na.table2[2,i] &lt;- length(grep(&quot;IAP&quot;, happy2[,i]))
+  na.table2[3,i] &lt;- length(grep(&quot;DK&quot;, happy2[,i]))
+}
+names(na.table2) &lt;- colnames(happy2)
+rownames(na.table2) &lt;- c(&quot;NAs&quot;,&quot;IAP&quot;,&quot;DK&quot;)
+na.table2</code></pre>
+<pre><code>##     happy year age sex marital degree finrela health wtssall partyid
+## NAs  4756    0 221   0      25    173    5001  16445       0     385
+## IAP     0    0   0   0       0      0       0      0       0       0
+## DK      0    0   0   0       0      0       0      0       0       0
+##     polviews
+## NAs     9385
+## IAP        0
+## DK         0</code></pre>
+<p>As we can see below, a lot of variables were also cast into the wrong variable type. Age appears to be a character variable, and should be numeric. All categorical variables needed to be changed to type factor (except partyid and polyviews). There were 335 instances where age appeared as “89 OR OLDER”. We changed this for all instances that were labeled as “89 OR OLDER” and labeled them as 89 so the variable age could be changed to type numeric. We can now see below that all variabels are now cast into the correct variable type.</p>
+<pre class="r"><code>str(happy)</code></pre>
+<pre><code>## 'data.frame':    62466 obs. of  11 variables:
+##  $ happy   : chr  &quot;NOT TOO HAPPY&quot; &quot;NOT TOO HAPPY&quot; &quot;PRETTY HAPPY&quot; &quot;NOT TOO HAPPY&quot; ...
+##  $ year    : int  1972 1972 1972 1972 1972 1972 1972 1972 1972 1972 ...
+##  $ age     : chr  &quot;23&quot; &quot;70&quot; &quot;48&quot; &quot;27&quot; ...
+##  $ sex     : chr  &quot;FEMALE&quot; &quot;MALE&quot; &quot;FEMALE&quot; &quot;FEMALE&quot; ...
+##  $ marital : chr  &quot;NEVER MARRIED&quot; &quot;MARRIED&quot; &quot;MARRIED&quot; &quot;MARRIED&quot; ...
+##  $ degree  : chr  &quot;BACHELOR&quot; &quot;LT HIGH SCHOOL&quot; &quot;HIGH SCHOOL&quot; &quot;BACHELOR&quot; ...
+##  $ finrela : chr  &quot;AVERAGE&quot; &quot;ABOVE AVERAGE&quot; &quot;AVERAGE&quot; &quot;AVERAGE&quot; ...
+##  $ health  : chr  &quot;GOOD&quot; &quot;FAIR&quot; &quot;EXCELLENT&quot; &quot;GOOD&quot; ...
+##  $ wtssall : num  0.445 0.889 0.889 0.889 0.889 ...
+##  $ partyid : chr  &quot;IND,NEAR DEM&quot; &quot;NOT STR DEMOCRAT&quot; &quot;INDEPENDENT&quot; &quot;NOT STR DEMOCRAT&quot; ...
+##  $ polviews: chr  &quot;IAP&quot; &quot;IAP&quot; &quot;IAP&quot; &quot;IAP&quot; ...</code></pre>
+<pre class="r"><code>length(grep(&quot;89 OR OLDER&quot;, happy2$age))</code></pre>
+<pre><code>## [1] 335</code></pre>
+<pre class="r"><code>for (i in 1:nrow(happy2)) {
+  age &lt;- happy2[i, 'age']
+  if(!is.na(age)){
+    if(age==&quot;89 OR OLDER&quot;) {
+      happy2[i, 'age'] &lt;- 89
+    }
+  }
+}
+
+happy2$happy &lt;- as.factor(happy2$happy)
+happy2$age &lt;- as.numeric(happy2$age)
+happy2$sex &lt;- as.factor(happy2$sex)
+happy2$marital &lt;- as.factor(happy2$marital)
+happy2$degree &lt;- as.factor(happy2$degree)
+happy2$finrela &lt;- as.factor(happy2$finrela)
+happy2$health &lt;- as.factor(happy2$health)
+
+str(happy2)</code></pre>
+<pre><code>## 'data.frame':    62466 obs. of  11 variables:
+##  $ happy   : Factor w/ 3 levels &quot;NOT TOO HAPPY&quot;,..: 1 1 2 1 2 2 1 1 2 2 ...
+##  $ year    : int  1972 1972 1972 1972 1972 1972 1972 1972 1972 1972 ...
+##  $ age     : num  23 70 48 27 61 26 28 27 21 30 ...
+##  $ sex     : Factor w/ 2 levels &quot;FEMALE&quot;,&quot;MALE&quot;: 1 2 1 1 1 2 2 2 1 1 ...
+##  $ marital : Factor w/ 5 levels &quot;DIVORCED&quot;,&quot;MARRIED&quot;,..: 3 2 2 2 2 3 1 3 3 2 ...
+##  $ degree  : Factor w/ 5 levels &quot;BACHELOR&quot;,&quot;GRADUATE&quot;,..: 1 5 3 1 3 3 3 1 3 3 ...
+##  $ finrela : Factor w/ 5 levels &quot;ABOVE AVERAGE&quot;,..: 2 1 2 2 1 1 1 2 2 3 ...
+##  $ health  : Factor w/ 4 levels &quot;EXCELLENT&quot;,&quot;FAIR&quot;,..: 3 2 1 3 3 3 1 3 1 2 ...
+##  $ wtssall : num  0.445 0.889 0.889 0.889 0.889 ...
+##  $ partyid : chr  &quot;IND,NEAR DEM&quot; &quot;NOT STR DEMOCRAT&quot; &quot;INDEPENDENT&quot; &quot;NOT STR DEMOCRAT&quot; ...
+##  $ polviews: chr  NA NA NA NA ...</code></pre>
+<p>Factors were also organized into meaningful order as follows: We ordered marital status by age and health by age.</p>
+<pre class="r"><code>marital.df &lt;- as.data.frame(aggregate(happy2$age, by=list(happy2$marital), mean, na.rm=TRUE))
+marital.order &lt;- c(order(marital.df[,&quot;x&quot;]))
+happy2$marital &lt;- factor(happy2$marital,levels(happy2$marital)[marital.order])
+
+health.df &lt;- as.data.frame(aggregate(happy2$age, by=list(happy2$health), mean, na.rm=TRUE))
+health.order &lt;- c(order(health.df[,&quot;x&quot;]))
+happy2$health &lt;- factor(happy2$health,levels(happy2$health)[health.order])
+
+str(happy2)</code></pre>
+<pre><code>## 'data.frame':    62466 obs. of  11 variables:
+##  $ happy   : Factor w/ 3 levels &quot;NOT TOO HAPPY&quot;,..: 1 1 2 1 2 2 1 1 2 2 ...
+##  $ year    : int  1972 1972 1972 1972 1972 1972 1972 1972 1972 1972 ...
+##  $ age     : num  23 70 48 27 61 26 28 27 21 30 ...
+##  $ sex     : Factor w/ 2 levels &quot;FEMALE&quot;,&quot;MALE&quot;: 1 2 1 1 1 2 2 2 1 1 ...
+##  $ marital : Factor w/ 5 levels &quot;NEVER MARRIED&quot;,..: 1 3 3 3 3 1 4 1 1 3 ...
+##  $ degree  : Factor w/ 5 levels &quot;BACHELOR&quot;,&quot;GRADUATE&quot;,..: 1 5 3 1 3 3 3 1 3 3 ...
+##  $ finrela : Factor w/ 5 levels &quot;ABOVE AVERAGE&quot;,..: 2 1 2 2 1 1 1 2 2 3 ...
+##  $ health  : Factor w/ 4 levels &quot;EXCELLENT&quot;,&quot;GOOD&quot;,..: 2 3 1 2 2 2 1 2 1 3 ...
+##  $ wtssall : num  0.445 0.889 0.889 0.889 0.889 ...
+##  $ partyid : chr  &quot;IND,NEAR DEM&quot; &quot;NOT STR DEMOCRAT&quot; &quot;INDEPENDENT&quot; &quot;NOT STR DEMOCRAT&quot; ...
+##  $ polviews: chr  NA NA NA NA ...</code></pre>
 </div>
 <div id="data-exploration" class="section level2">
 <h2>Data Exploration</h2>
