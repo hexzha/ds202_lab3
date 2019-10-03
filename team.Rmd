@@ -63,23 +63,41 @@ rownames(na.table2) <- c("NAs","IAP","DK")
 na.table2
 ```
 
-Variables were also cast into the correct type in order to ease data visualization. All variables appear to be the correct type of variable, including age. Additionally, there are no instances where age appears as "89 OR OLDER". 
+Variables were also cast into the correct type in order to ease data visualization. Age appears to be a character variable, and should be numeric. All categorical variables need to be changed to type factor except partyid and polyviews. There are 335 instances where age appears as "89 OR OLDER". We changed this to show "89 OR OLDER" as 89 so the variable age can be changed to numeric.  
 ```{r}
 str(happy2)
 length(grep("89 OR OLDER", happy2$age))
 
 for (i in 1:nrow(happy2)) {
-  val <- happy2[i, 'age']
-  if(val == "89 OR OLDER") {
-    happy2[i, 'age'] <- 89
-    print()
+  age <- happy2[i, 'age']
+  if(!is.na(age)){
+    if(age=="89 OR OLDER") {
+      happy2[i, 'age'] <- 89
+    }
   }
 }
+
+happy2$happy <- as.factor(happy2$happy)
+happy2$age <- as.numeric(happy2$age)
+happy2$sex <- as.factor(happy2$sex)
+happy2$marital <- as.factor(happy2$marital)
+happy2$degree <- as.factor(happy2$degree)
+happy2$finrela <- as.factor(happy2$finrela)
+happy2$health <- as.factor(happy2$health)
+str(happy2)
 ```
 
-Factors were also organized into meaningful order as follows: 
+Factors were also organized into meaningful order as follows: We ordered marital status by age, 
 ```{r}
-#insert relevant R code for Q3 here
+happy2 %>% 
+  group_by(marital) %>% 
+  mutate(mean=mean(age)) %>%
+  arrange(age)
+
+marital.order <- order(as.data.frame(aggregate(happy2$age, by=list(happy2$marital), mean, na.rm=TRUE))[,"x"])
+
+levels(happy2$marital)
+sizes <- ordered(happy2$marital, levels = c("small", "medium", "large"))
 ```
 
 
